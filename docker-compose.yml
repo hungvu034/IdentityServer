@@ -1,0 +1,36 @@
+version: '3.0.8'
+
+services:
+  identitydb:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: isdb
+    environment:
+      SA_PASSWORD: "Password123"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - is_data:/var/opt/mssql
+    restart: always
+    ports:
+      - "1433:1433"
+
+  iserverapi:
+    container_name: isservice
+    image: hungvu034/iserver:latest
+    build: 
+      dockerfile: dockerfile.yml
+      context: .
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionString=Server=isdb,1433;Database=IsDb;User Id=sa;Password=Password123;
+    depends_on:
+      - identitydb
+    ports:
+      - 5001:80
+      
+
+volumes:
+  is_data:
+    name: is_data
+    external: false
+      
